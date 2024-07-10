@@ -40,7 +40,7 @@
         players.forEach((player) => {
           const ctx = document.getElementById("chartReceived" + player.uriName);
           //get highest number of votes received and given, set to the highest of the two
-          let maxVotes = Math.max(Math.max(...player.receiveddata), Math.max(...player.givendata));
+          let maxVotes = Math.ceil(Math.max(Math.max(...player.receiveddata), Math.max(...player.givendata)) / 10) * 10;
           new Chart(ctx, {
             type: "bar",
             data: {
