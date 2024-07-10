@@ -15,7 +15,6 @@
     "csv-reader": "^1.0.12",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
-    "fs": "^0.0.1-security",
-    "parcel": "^2.12.0"
+    "fs": "^0.0.1-security"
   }
 }
