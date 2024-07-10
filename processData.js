@@ -27,11 +27,6 @@ async function processAllFiles() {
 async function processData() {
   const { competitors, votes, submissions, rounds } = await processAllFiles();
 
-  //   console.log(competitors);
-  //   console.log(votes);
-  //   console.log(submissions);
-  //   console.log(rounds);
-
   let players = competitors.map((competitor) => {
     return {
       id: competitor.ID,
@@ -50,43 +45,51 @@ async function processData() {
     };
   });
 
-  votes.forEach((vote) => {
-    // Find the corresponding submission
-    const submission = submissions.find((sub) => sub["Spotify URI"] === vote["Spotify URI"]);
-    if (submission) {
-      // Find the player who received the vote
-      const receivingPlayer = players.find((player) => player.id === submission["Submitter ID"]);
-      if (receivingPlayer) {
-        // Update votesReceived for the receiving player
-        let receivedEntry = receivingPlayer.votesReceived.find(
-          (entry) => entry.id === vote["Voter ID"]
-        );
-        if (receivedEntry) {
-          receivedEntry.totalVotesReceived += parseInt(vote["Points Assigned"], 10);
-        } else {
-          receivingPlayer.votesReceived.push({
-            id: vote["Voter ID"],
-            totalVotesReceived: parseInt(vote["Points Assigned"], 10),
-          });
-        }
+  rounds.forEach((round) => {
+    const roundVotes = votes.filter((vote) => vote["Round ID"] === round.ID);
 
-        // Similarly, update votesGiven for the voter
-        const votingPlayer = players.find((player) => player.id === vote["Voter ID"]);
-        if (votingPlayer) {
-          let givenEntry = votingPlayer.votesGiven.find(
-            (entry) => entry.id === submission["Submitter ID"]
+    const roundSubmissions = submissions.filter(
+      (submission) => submission["Round ID"] === round.ID
+    );
+
+    roundVotes.forEach((vote) => {
+      // Find the corresponding submission
+      const submission = roundSubmissions.find((sub) => sub["Spotify URI"] === vote["Spotify URI"]);
+      if (submission["Round ID"] === vote["Round ID"]) {
+        // Find the player who received the vote
+        const receivingPlayer = players.find((player) => player.id === submission["Submitter ID"]);
+        if (receivingPlayer) {
+          // Update votesReceived for the receiving player
+          let receivedEntry = receivingPlayer.votesReceived.find(
+            (entry) => entry.id === vote["Voter ID"]
           );
-          if (givenEntry) {
-            givenEntry.totalVotesGiven += parseInt(vote["Points Assigned"], 10);
+          if (receivedEntry) {
+            receivedEntry.totalVotesReceived += parseInt(vote["Points Assigned"], 10);
           } else {
-            votingPlayer.votesGiven.push({
-              id: submission["Submitter ID"],
-              totalVotesGiven: parseInt(vote["Points Assigned"], 10),
+            receivingPlayer.votesReceived.push({
+              id: vote["Voter ID"],
+              totalVotesReceived: parseInt(vote["Points Assigned"], 10),
             });
+          }
+
+          //find person who voted
+          const votingPlayer = players.find((player) => player.id === vote["Voter ID"]);
+          if (votingPlayer) {
+            let givenEntry = votingPlayer.votesGiven.find(
+              (entry) => entry.id === submission["Submitter ID"]
+            );
+            if (givenEntry) {
+              givenEntry.totalVotesGiven += parseInt(vote["Points Assigned"], 10);
+            } else {
+              votingPlayer.votesGiven.push({
+                id: submission["Submitter ID"],
+                totalVotesGiven: parseInt(vote["Points Assigned"], 10),
+              });
+            }
           }
         }
       }
-    }
+    });
   });
 
   // add name field to each totalVotesReceived and totalVotesGiven
@@ -106,20 +109,6 @@ async function processData() {
     player.votesReceived.sort((a, b) => b.totalVotesReceived - a.totalVotesReceived);
     player.votesGiven.sort((a, b) => b.totalVotesGiven - a.totalVotesGiven);
   });
-
-  /*   players.forEach((player) => {
-    console.log(player.name);
-    console.log("Votes Given: ");
-    player.votesGiven.forEach((vote) => {
-      console.log(vote.name + ": " + vote.totalVotesGiven);
-    });
-    console.log("\n");
-    console.log("Votes Received: ");
-    player.votesReceived.forEach((vote) => {
-      console.log(vote.name + ": " + vote.totalVotesReceived);
-    });
-    console.log("\n");
-  }); */
   return players;
   //end
 }
@@ -169,9 +158,8 @@ async function processForCharts() {
   return playerCharts;
 }
 
-// (async () => {
-//   playerCharts = await processForCharts();
-//   console.log(playerCharts);
-// })();
+(async () => {
+  players = await processData();
+})();
 
 module.exports = { processFile, processAllFiles, processData, processForCharts };
