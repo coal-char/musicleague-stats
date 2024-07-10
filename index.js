@@ -55,6 +55,7 @@ rounds = [  {
 
 app.use(express.static("public"));
 
+app.set("views", __dirname + "/views");
 // app.get("/chartsjs", async (req, res) => {
 //   res.sendFile(`${__dirname}/node_modules/chart.js/auto`);
 // });
