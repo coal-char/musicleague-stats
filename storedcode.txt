@@ -1,0 +1,105 @@
+function convertCompetitorsToPlayers(competitors) {
+  return competitors.map((competitor) => ({
+    id: competitor.ID,
+    name: competitor.Name,
+    submissions: [],
+    votesGiven: [],
+    votesReceived: [],
+  }));
+}
+
+function processSubmissions(submissions, players) {
+  return submissions.map((submission) => ({
+    uri: submission["Spotify URI"],
+    player_id: submission["Submitter ID"],
+    round_id: submission["Round ID"],
+  }));
+}
+
+function processVotes(votes, submissions, players) {
+  votes.forEach((vote) => {
+    const submission = submissions.find((sub) => sub.uri === vote["Spotify URI"]);
+    if (submission) {
+      const receivingPlayer = players.find((player) => player.id === submission.player_id);
+      if (receivingPlayer) {
+        let receivedEntry = receivingPlayer.votesReceived.find(
+          (entry) => entry.id === vote["Voter ID"]
+        );
+        if (receivedEntry) {
+          receivedEntry.totalVotesReceived += parseInt(vote["Points Assigned"], 10);
+        } else {
+          receivingPlayer.votesReceived.push({
+            id: vote["Voter ID"],
+            totalVotesReceived: parseInt(vote["Points Assigned"], 10),
+          });
+        }
+        const votingPlayer = players.find((player) => player.id === vote["Voter ID"]);
+        if (votingPlayer) {
+          let givenEntry = votingPlayer.votesGiven.find(
+            (entry) => entry.id === submission.player_id
+          );
+          if (givenEntry) {
+            givenEntry.totalVotesGiven += parseInt(vote["Points Assigned"], 10);
+          } else {
+            votingPlayer.votesGiven.push({
+              id: submission.player_id,
+              totalVotesGiven: parseInt(vote["Points Assigned"], 10),
+            });
+          }
+        }
+      }
+    }
+  });
+  return players;
+}
+
+function addNamesToVotes(players, competitors) {
+  players.forEach((player) => {
+    player.votesReceived.forEach((vote) => {
+      let name = competitors.find((competitor) => competitor.ID === vote.id).Name;
+      vote.name = name;
+    });
+    player.votesGiven.forEach((vote) => {
+      let name = competitors.find((competitor) => competitor.ID === vote.id).Name;
+      vote.name = name;
+    });
+  });
+  return players;
+}
+
+function sortVotesInPlayers(players) {
+  players.forEach((player) => {
+    player.votesReceived.sort((a, b) => b.totalVotesReceived - a.totalVotesReceived);
+    player.votesGiven.sort((a, b) => b.totalVotesGiven - a.totalVotesGiven);
+  });
+  return players;
+}
+
+function logResults(players) {
+  players.forEach((player) => {
+    console.log(player.name);
+    console.log("Votes Given: ");
+    player.votesGiven.forEach((vote) => {
+      console.log(`${vote.name}: ${vote.totalVotesGiven}`);
+    });
+    console.log("\nVotes Received: ");
+    player.votesReceived.forEach((vote) => {
+      console.log(`${vote.name}: ${vote.totalVotesReceived}`);
+    });
+    console.log("\n");
+  });
+}
+
+async function processData() {
+  const { competitors, votes, submissions, rounds } = await processAllFiles();
+  let players = convertCompetitorsToPlayers(competitors);
+  const submissionsArr = processSubmissions(submissions, players);
+  players = processVotes(votes, submissions, players);
+  players = addNamesToVotes(players, competitors);
+  players = sortVotesInPlayers(players);
+  logResults(players);
+}
+
+(async () => {
+  await processData();
+})();

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>View Data</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+</head>
+
+<body>
+  <table border="1">
+    <tr>
+      <th>Name</th>
+      <th>Age</th>
+      <th>Occupation</th>
+      <th>Company</th>
+    </tr>
+    <tr>
+      <td><%= data.name %></td>
+      <td><%= data.age %></td>
+      <td><%= data.occupation %></td>
+      <td><%= data.company %></td>
+    </tr>
+  </table>
+  <% for (const player of data){ %>
+  <canvas id=<% player.name %> style="width:100%;max-width:600px"></canvas>
+  <% } %>
+  <script>
+    // Step 2: Serialize the data into a string
+    var dataString = '<%= JSON.stringify(data) %>';
+
+    // Step 3: Parse the serialized string back into a JavaScript object
+    var data = JSON.parse(dataString);
+
+    // Now you can use `data` as a JavaScript object in your script
+    console.log(data); // Example usage
+
+    new Chart(, {
+      type: "bar",
+      data: {
+        labels: xValues,
+        datasets: [{
+          backgroundColor: barColors,
+          data: yValues
+        }]
+      },
+      options: {
+        legend: {
+          display: false
+        },
+        title: {
+          display: true,
+          text: "World Wine Production 2018"
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
