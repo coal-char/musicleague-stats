@@ -53,6 +53,20 @@ rounds = [  {
 
 */
 
+app.use(express.static("public"));
+
+// app.get("/chartsjs", async (req, res) => {
+//   res.sendFile(`${__dirname}/node_modules/chart.js/auto`);
+// });
+// app.get("/processData", async (req, res) => {
+//   res.sendFile(`${__dirname}/processData.js`);
+// });
+
+app.get("/data", async (req, res) => {
+  const playerCharts = await processForCharts();
+  res.json(playerCharts);
+});
+
 app.get("/", async (req, res) => {
   const playerCharts = await processForCharts();
   res.render("home", {

@@ -128,8 +128,8 @@ async function processForCharts() {
   players = await processData();
   let playerCharts = [];
   players.forEach((player) => {
-    let recievedlabels = [];
-    let recieveddata = [];
+    let receivedlabels = [];
+    let receiveddata = [];
     let givenlabels = [];
     let givendata = [];
     //13 random colors for bars
@@ -149,8 +149,8 @@ async function processForCharts() {
       "#F9C80E",
     ];
     player.votesReceived.forEach((vote) => {
-      recievedlabels.push(vote.name);
-      recieveddata.push(vote.totalVotesReceived);
+      receivedlabels.push(vote.name);
+      receiveddata.push(vote.totalVotesReceived);
     });
     player.votesGiven.forEach((vote) => {
       givenlabels.push(vote.name);
@@ -158,8 +158,9 @@ async function processForCharts() {
     });
     playerCharts.push({
       name: player.name,
-      recievedlabels: recievedlabels,
-      recieveddata: recieveddata,
+      uriName: encodeURI(player.name),
+      receivedlabels: receivedlabels,
+      receiveddata: receiveddata,
       givenlabels: givenlabels,
       givendata: givendata,
       backgroundColors: backgroundColors,
